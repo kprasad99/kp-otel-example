@@ -1,0 +1,8 @@
+
+
+CREATE TABLE TBL_USER (
+    ID INT NOT NULL,
+    NAME TEXT,
+    AGE INT,
+    PRIMARY KEY(ID)
+);

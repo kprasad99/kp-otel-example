@@ -1,0 +1,22 @@
+
+server.http2.enabled: true
+spring.application.name: kp-otel-server
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+logging.pattern.level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+#logging.pattern.level: trace_id=%mdc{trace_id} span_id=%mdc{span_id} trace_flags=%mdc{trace_flags} %5p
+#logging.pattern.level: "%5p [${spring.application.name:},%X{trace_id:-},%X{span_id:-}]"
+app.database.url: h2:mem:///kpoteldb?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+#spring.r2dbc.url: r2dbc:${app.database.url}
+spring.r2dbc.url: r2dbc:h2:mem:///kpoteldb?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+#spring.r2dbc.username: sa
+#spring.r2dbc.password: 
+spring.flyway.locations: classpath:db/migration
+spring.flyway.enabled: true
+spring.flyway.validate-on-migrate: true
+#spring.flyway.user=${spring.r2dbc.username}
+#spring.flyway.password=${spring.r2dbc.password}
+#spring.flyway.url: jdbc:${app.database.url}
+spring.flyway.url: jdbc:h2:mem:///kpoteldb?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
