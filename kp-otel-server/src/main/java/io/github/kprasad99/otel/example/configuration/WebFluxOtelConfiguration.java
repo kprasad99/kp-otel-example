@@ -10,8 +10,8 @@ import io.opentelemetry.instrumentation.spring.webflux.v5_3.SpringWebfluxTelemet
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Configuration
-@ConditionalOnProperty(name = "management.otlp.tracing.endpoint")
+//@Configuration
+//@ConditionalOnProperty(name = "management.otlp.tracing.endpoint")
 public class WebFluxOtelConfiguration {
 
 	@Bean

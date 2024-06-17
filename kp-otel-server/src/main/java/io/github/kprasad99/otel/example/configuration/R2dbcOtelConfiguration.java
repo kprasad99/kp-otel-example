@@ -13,8 +13,8 @@ import io.r2dbc.spi.ConnectionFactoryOptions;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Configuration
-@ConditionalOnProperty(name = "management.otlp.tracing.endpoint")
+//@Configuration
+//@ConditionalOnProperty(name = "management.otlp.tracing.endpoint")
 public class R2dbcOtelConfiguration {
 
 	@Bean

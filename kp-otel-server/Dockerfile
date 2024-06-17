@@ -1,4 +1,4 @@
-FROM gradle:8.4-jdk17-jammy as builder
+FROM gradle:8.8-jdk-lts-and-current-jammy AS builder
 
 COPY . /app/
 
@@ -6,10 +6,10 @@ WORKDIR /app
 
 RUN gradle build \
     && java -Djarmode=layertools \
-    -jar build/libs/kp-otel-server-0.0.1-SNAPSHOT.jar extract \
+    -jar build/libs/kp-otel-server-1.0.0-SNAPSHOT.jar extract \
     --destination /output
 
-FROM amazoncorretto/openjdk:21-alpine
+FROM amazoncorretto:21-alpine3.19
 
 ARG DEPENDENCY=/output
 WORKDIR /app
@@ -23,4 +23,4 @@ COPY --from=builder ${DEPENDENCY}/application/ ./
 
 VOLUME /tmp
 
-ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

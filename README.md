@@ -48,3 +48,4 @@ curl --location 'http://kp-dev.local/kp-otel-example/api/users/1' \
 curl --location 'http://kp-dev.local/kp-otel-example/api/users'
 ```
 * check the tracing in zipkin by opening url `http://<docker-host>:9411/` 
+* check the tracing in tempo by opening url `http://<docker-host>:9411/` 

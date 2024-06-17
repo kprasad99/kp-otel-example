@@ -8,13 +8,11 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      #  - "--tracing.zipkin=true"
-      #  - "--tracing.zipkin.httpEndpoint=http://zipkin:9411/api/v2/spans"
-      - "--tracing.openTelemetry.insecure=true"
       - "--tracing.serviceName=traefik"
-      - "--tracing.openTelemetry=true"
-      - "--tracing.openTelemetry.address=otel-collector:4317"
-      - "--tracing.openTelemetry.grpc=true"
+      - "--tracing.otlp=true"
+      - "--tracing.otlp.grpc.endpoint=otel-collector:4317"
+      - "--tracing.otlp.grpc=true"
+      - "--tracing.otlp.grpc.insecure=true"
     ports:
       - "80:80"
       - "443:443"
@@ -30,7 +28,7 @@ services:
       - k-network
   otel-collector:
     #image: otel/opentelemetry-collector-contrib:0.86.0
-    image: otel/opentelemetry-collector:0.86.0
+    image: otel/opentelemetry-collector:0.102.1
     volumes:
     #  - ./config/otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml
       - ./config/otel-collector/config.yaml:/etc/otelcol/config.yaml
@@ -46,6 +44,44 @@ services:
 #      - 55679:55679 # zpages extension
     networks:
       - k-network
+  tempo:
+    image: grafana/tempo:latest
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./config/tempo/tempo.yaml:/etc/tempo.yaml
+    ports:
+      - "14268"  # jaeger ingest
+      - "3200"   # tempo
+      - "4317"  # otlp grpc
+      - "4318"  # otlp http
+      - "9411"   # zipkin
+    networks:
+      - k-network
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   command:
+  #     - --config.file=/etc/prometheus.yaml
+  #     - --web.enable-remote-write-receiver
+  #     - --enable-feature=exemplar-storage
+  #   volumes:
+  #     - ./config/prometheus.yaml:/etc/prometheus.yaml
+  #   ports:
+  #     - "9090:9090"
+  #   networks:
+  #     - k-network
+  grafana:
+    image: grafana/grafana:11.0.0
+    volumes:
+      - ./config/grafana/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+    ports:
+      - "3000:3000"
+    networks:
+      - k-network
   kp-otel-server:
     image: kprasad99/kp-otel-server:0.0.1
     build:
@@ -53,12 +89,14 @@ services:
       dockerfile: Dockerfile
     labels:
       - "traefik.enable=true"
-      - "traefik.http.services.kp-grpc-gw-example.loadbalancer.server.scheme=h2c"
-      - "traefik.http.services.kp-grpc-gw-example.loadbalancer.server.port=8080"
-      - "traefik.http.routers.kp-grpc-gw-example.rule=PathPrefix(`/kp-grpc-gw-example/api`)"
-      - "traefik.http.routers.web-router.rule=Host(`kp-dev.local`)"
+      - "traefik.http.services.kp-otel-example.loadbalancer.server.scheme=h2c"
+      - "traefik.http.services.kp-otel-example.loadbalancer.server.port=8080"
+      - "traefik.http.routers.kp-otel-example.rule=PathPrefix(`/kp-otel-example/api`)"
     environment:
-      management.otlp.tracing.endpoint: http://otel-collector:4318/v1/traces
+      # https://opentelemetry.io/docs/languages/sdk-configuration/general/
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
     networks:
       - k-network
 networks:
