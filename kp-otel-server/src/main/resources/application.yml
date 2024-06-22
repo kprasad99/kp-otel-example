@@ -1,11 +1,11 @@
 
 server.http2.enabled: true
+spring.threads.virtual.enabled: true
 spring.application.name: kp-otel-server
 management:
   tracing:
     sampling:
       probability: 1.0
-logging.pattern.level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
 spring.r2dbc:
   url: "r2dbc:h2:mem:///kpoteldb?DB_CLOSE_DELAY=-1;"
   # username: sa

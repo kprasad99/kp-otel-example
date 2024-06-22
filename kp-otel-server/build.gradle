@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version "${springBootVersion}"
 	id 'io.spring.dependency-management' version "${dependencyManagementVersion}"
+	id 'org.graalvm.buildtools.native' version '0.10.2'
 }
 
 group = 'io.github.kprasad99'
@@ -47,7 +48,7 @@ dependencies {
 
 	runtimeOnly "io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0"
 	
-	implementation "io.opentelemetry.instrumentation:opentelemetry-spring-webflux-5.3"
+	implementation "io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter"
 	implementation "io.opentelemetry.instrumentation:opentelemetry-r2dbc-1.0"
 	implementation "io.opentelemetry.instrumentation:opentelemetry-jdbc"
 	
@@ -68,3 +69,20 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+graalvmNative {
+	binaries {
+        main {
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(21)
+                vendor = JvmVendorSpec.matching("Oracle Corporation")
+            }
+		buildArgs.add('--trace-class-initialization=ch.qos.logback.classic.Logger,io.micrometer.common.util.internal.logging.Slf4JLoggerFactory')
+      	buildArgs.add('--trace-object-instantiation=ch.qos.logback.core.AsyncAppenderBase$Worker')
+      	buildArgs.add('--initialize-at-build-time=org.slf4j.LoggerFactory,ch.qos.logback')
+
+		// //	buildArgs.add('--initialize-at-run-time=io.micrometer.common.util.internal.logging.LocationAwareSlf4JLogger')
+        }
+    }
+}
+
